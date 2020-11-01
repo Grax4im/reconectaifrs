@@ -1,4 +1,19 @@
 INSERT INTO reconecta_pessoa 
+VALUES (s_id_reconecta_pessoa.nextval, 'Pedro', 519892545, 'pedro@bol.com.br', 'Porto Alegre');
+
+INSERT INTO reconecta_pessoa 
+VALUES (s_id_reconecta_pessoa.nextval, 'Marcia', 519892545, 'marcia@bol.com.br', 'Portão');
+
+INSERT INTO reconecta_pessoa 
+VALUES (s_id_reconecta_pessoa.nextval, 'Ivania', 519892545, 'ivania@bol.com.br', 'Alvorada');
+
+INSERT INTO reconecta_pessoa 
+VALUES (s_id_reconecta_pessoa.nextval, 'Cristian', 519892545, 'cristian@bol.com.br', 'Alvorada');
+
+INSERT INTO reconecta_pessoa 
+VALUES (s_id_reconecta_pessoa.nextval, 'Karen', 519892545, 'karen@bol.com.br', 'Alvorada');
+
+INSERT INTO reconecta_pessoa 
 VALUES (s_id_reconecta_pessoa.nextval, 'Aparicio', 519892545, 'aparicio@bol.com.br', 'Alvorada');
 
 INSERT INTO reconecta_pessoa 
