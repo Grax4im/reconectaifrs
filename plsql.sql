@@ -73,6 +73,14 @@ dbms_output.put_line('ID do recebedor: ' || v_id);
 end;
 /
 ---------------------------------------------retorna o id do recebedor a partir do nome da pessoa
+create or replace function f_criar_computador(p_isNotebook number, p_isUsable number, p_descricao varchar) return number is
+        v_id_computador number;
+    begin
+        v_id_computador := s_id_reconecta_computador.nextval;
+        insert into reconecta_computador values(v_id_computador, p_isNotebook, p_isUsable, p_descricao);
+        return v_id_computador;
+    end;
+/
 
 --Procedimento para criar uma pessoa no sistema
 CREATE OR REPLACE PROCEDURE p_cria_pessoa (nome IN VARCHAR, telefone IN NUMBER, email IN VARCHAR, cidade IN VARCHAR) IS
@@ -102,7 +110,6 @@ end;
 
 exec localiza_pessoas_de_cidade_especifica('Alvorada');
 --procedure com cursor que lista todas as pessoas de uma cidade específica
-
 
 create or replace procedure localiza_doador_de_uma_doacao(p_id_doacao reconecta_doacao.id_doacao%type) is
 
@@ -150,9 +157,8 @@ end;
 /
 
 exec localiza_recebor_de_uma_doacao(3);
+
 --indica o nome do recebedor a partir do id da doação
-
-
 create or replace procedure listar_computadores_usaveis is
 
 cursor c_computadores_usaveis is
@@ -172,3 +178,37 @@ end;
 /
 exec listar_computadores_usaveis;
 --lista quais são os computadores usáveis
+
+--Procedure Quero Doar(pega o nome da pessoa, cria registro do computador e do quero doar)
+CREATE OR REPLACE PROCEDURE p_criar_quero_doar(nome_pessoa IN VARCHAR, isNotebook IN NUMBER, isUsable IN NUMBER, descricao IN VARCHAR) IS
+    id_pessoa NUMBER;
+    id_computador NUMBER;
+BEGIN
+    id_pessoa := f_procura_pessoa_por_nome(nome_pessoa);
+    id_computador := f_criar_computador(isNotebook, isUsable, descricao);
+    
+    INSERT INTO reconecta_quero_doar
+    VALUES (s_id_reconecta_quero_doar.nextval,id_pessoa, id_computador, sysdate);
+END;
+
+--Procedure para inserir um QUERO RECEBER (recebe o nome da pessoa, se é notebook e uma descricao do pedido)
+CREATE OR REPLACE PROCEDURE p_criar_quero_receber(nome_pessoa IN VARCHAR, isNotebook IN NUMBER, descricao IN VARCHAR) IS
+    id_pessoa NUMBER;
+BEGIN
+    id_pessoa := f_procura_pessoa_por_nome(nome_pessoa);
+    
+    INSERT INTO reconecta_quero_receber
+    VALUES (s_id_reconecta_quero_receber.nextval,id_pessoa, isNotebook, descricao,sysdate);
+END;
+
+CREATE OR REPLACE PROCEDURE p_criar_doacao(nome_doador VARCHAR, nome_receptor VARCHAR) IS
+    id_doador NUMBER;
+    id_receptor NUMBER;
+BEGIN
+    id_doador := f_procura_pessoa_por_nome(nome_doador);
+    id_receptor := f_procura_pessoa_por_nome(nome_receptor);
+
+    
+    INSERT INTO reconecta_doacao
+    VALUES (s_id_reconecta_doacao.nextval,id_doador, id_receptor, sysdate);
+END;
