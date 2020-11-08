@@ -20,7 +20,7 @@ BEGIN
     dbms_output.put_line(c);
 END;
 
-create or replace function retorna_nome_doador(p_nome_doador varchar) return number is
+create or replace function f_retorna_id_doador(p_nome_doador varchar) return number is
 
 v_id_doador number;
 
@@ -41,13 +41,13 @@ end;
 declare
 v_id number;
 begin
-v_id := retorna_nome_doador('Cristian');
+v_id := f_retorna_id_doador('Cristian');
 dbms_output.put_line('ID do doador: ' || v_id);
 end;
 /
 ---------------------------------------------retorna o id do doador a partir do nome da pessoa
 
-create or replace function retorna_nome_recebedor(p_nome_recebedor varchar) return number is
+create or replace function f_retorna_id_recebedor(p_nome_recebedor varchar) return number is
 
 v_id_recebedor number;
 
@@ -68,7 +68,7 @@ end;
 declare
 v_id number;
 begin
-v_id := retorna_nome_recebedor('Ivania');
+v_id := f_retorna_id_recebedor('Ivania');
 dbms_output.put_line('ID do recebedor: ' || v_id);
 end;
 /
@@ -111,10 +111,12 @@ end;
 exec localiza_pessoas_de_cidade_especifica('Alvorada');
 --procedure com cursor que lista todas as pessoas de uma cidade específica
 
-create or replace procedure localiza_doador_de_uma_doacao(p_id_doacao reconecta_doacao.id_doacao%type) is
+create or replace procedure localiza_doador_de_uma_doacao(p_id_doacao reconecta_doacao.id_doacao%type, p_nome_doador out varchar2) is
 
-cursor c_nomes is
+begin
+
 select nome_pessoa
+into p_nome_doador
 from reconecta_doacao
 left join reconecta_quero_doar
 on reconecta_doacao.id_quero_doar=reconecta_quero_doar.id_quero_doar
@@ -122,41 +124,48 @@ left join reconecta_pessoa
 on reconecta_quero_doar.id_pessoa=reconecta_pessoa.id_pessoa
 where reconecta_doacao.id_doacao=p_id_doacao;
 
-begin
-
-for r_nomes in c_nomes loop
-dbms_output.put_line('Doador da doação ' || p_id_doacao);
-dbms_output.put_line(r_nomes.nome_pessoa);
-end loop;
-
 end;
 /
 
-exec localiza_doador_de_uma_doacao(3);
+declare
+v_nome_doador varchar2(30);
+begin
+localiza_doador_de_uma_doacao(3, v_nome_doador);
+dbms_output.put_line(v_nome_doador);
+end;
+/
 --indica o nome do doador a partir do id da doação
 
-create or replace procedure localiza_recebor_de_uma_doacao(p_id_doacao reconecta_doacao.id_doacao%type) is
-
-cursor c_nomes is
-select nome_pessoa
-from reconecta_doacao
-left join reconecta_quero_receber
-on reconecta_doacao.id_quero_receber=reconecta_quero_receber.id_quero_receber
-left join reconecta_pessoa
-on reconecta_quero_receber.id_pessoa=reconecta_pessoa.id_pessoa
-where reconecta_doacao.id_doacao=p_id_doacao;
+create or replace procedure busca_nome_dos_doadores(p_doadores out sys_refcursor) as
 
 begin
 
-for r_nomes in c_nomes loop
-dbms_output.put_line('Recebedor da doação ' || p_id_doacao);
-dbms_output.put_line(r_nomes.nome_pessoa);
-end loop;
+open p_doadores for
+select nome_pessoa
+from reconecta_pessoa
+inner join reconecta_quero_doar
+on reconecta_pessoa.id_pessoa=reconecta_quero_doar.id_pessoa;
 
 end;
 /
 
-exec localiza_recebor_de_uma_doacao(3);
+declare
+c_doadores sys_refcursor;
+v_nome_pessoa varchar2(30);
+begin
+
+busca_nome_dos_doadores(c_doadores);
+LOOP
+FETCH c_doadores INTO v_nome_pessoa;
+EXIT WHEN c_doadores%NOTFOUND;
+DBMS_OUTPUT.PUT_LINE(v_nome_pessoa);
+END LOOP;
+CLOSE c_doadores;
+
+end;
+/
+--mostra os nomes de todos os doadores
+
 
 --indica o nome do recebedor a partir do id da doação
 create or replace procedure listar_computadores_usaveis is
@@ -208,7 +217,6 @@ BEGIN
     id_doador := f_procura_pessoa_por_nome(nome_doador);
     id_receptor := f_procura_pessoa_por_nome(nome_receptor);
 
-    
     INSERT INTO reconecta_doacao
     VALUES (s_id_reconecta_doacao.nextval,id_doador, id_receptor, sysdate);
 END;
